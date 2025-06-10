@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Blog</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 600px;
+        margin: 2rem auto;
+      }
+      h1 {
+        text-align: center;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+      li {
+        background: #f4f4f4;
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      input,
+      button {
+        padding: 0.5rem;
+        margin-top: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Simple Blog</h1>
+
+    <ul id="post-list">
+      <!-- Posts will be added here -->
+    </ul>
+
+    <input type="text" id="post-title" placeholder="Enter post title" />
+    <button onclick="addPost()">Add Post</button>
+
+    <script>
+      async function fetchPosts() {
+        const res = await fetch("/api/posts");
+        const data = await res.json();
+        const list = document.getElementById("post-list");
+        list.innerHTML = "";
+        data.posts.forEach((post) => {
+          const li = document.createElement("li");
+          li.textContent = post;
+          list.appendChild(li);
+        });
+      }
+
+      async function addPost() {
+        const input = document.getElementById("post-title");
+        const title = input.value.trim();
+
+        if (!title) {
+          alert("Title is required.");
+          return;
+        }
+
+        await fetch("/api/posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title }),
+        });
+
+        input.value = "";
+        fetchPosts();
+      }
+
+      fetchPosts();
+    </script>
+  </body>
+</html>
