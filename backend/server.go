@@ -10,8 +10,30 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// makeing handlers for each HTTP method
+
 func indexHandler(c *fiber.Ctx, db *sql.DB) error {
-	return c.SendString("Hello, World!")
+	var title string
+	var posts []string
+
+	rows, err := db.Query("SELECT title FROM posts")
+	if err != nil {
+		log.Println("Error querying database:", err)
+		return c.Status(500).SendString("Internal Server Error")
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err := rows.Scan(&title); err != nil {
+			log.Println("Error scanning row:", err)
+			continue
+		}
+		posts = append(posts, title)
+	}
+
+	return c.JSON(fiber.Map{
+		"posts": posts,
+	})
 }
 
 func postHandler(c *fiber.Ctx, db *sql.DB) error {
